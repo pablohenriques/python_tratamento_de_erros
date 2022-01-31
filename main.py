@@ -1,4 +1,5 @@
 from pprint import pprint
+from exceptions import SaldoInsuficienteError
 
 
 class Cliente:
@@ -38,7 +39,7 @@ class ContaCorrente:
     @property
     def numero(self):
         return self.__numero
-    
+
     def __set_numero(self, value):
         if not isinstance(value, int):
             raise ValueError("O atributo numero deve ser um numero inteiro")
@@ -53,18 +54,27 @@ class ContaCorrente:
     def __set_saldo(self, value):
         if not isinstance(value, int):
             raise ValueError("O atributo saldo deve ser um numero inteiro")
-        if value <= 0:
-            raise ValueError("O atributo saldo deve maior que zero")
+        # if value <= 0:
+        #     raise ValueError("O atributo saldo deve maior que zero")
         self.__saldo = value
 
     def transferir(self, valor, favorecido):
+        if valor < 0:
+            raise ValueError("O valor sacado não pode ser menor que zero")
+        self.sacar(valor)
         favorecido.depositar(valor)
 
     def sacar(self, valor):
-        self.saldo -= valor
+        if valor < 0:
+            raise ValueError("O valor sacado não pode ser menor que zero")
+        if self.__saldo < valor:
+            # raise SaldoInsuficienteError(saldo=self.__saldo, valor=valor)
+            # raise SaldoInsuficienteError("Saldo Insuficiente Para Transação")
+            raise SaldoInsuficienteError("", self.__saldo, valor, "abcd", "teste")
+        self.__saldo -= valor
 
     def depositar(self, valor):
-        self.saldo += valor
+        self.__set_agencia(valor)
 
     def __str__(self) -> str:
         return f"Agência: {self.__agencia} - Saldo: {self.__saldo} - Número: {self.__numero}"
@@ -89,4 +99,10 @@ def main():
 
 
 if __name__ == "__main__":
-   main()
+    conta_corrente1 = ContaCorrente(None, 400, 123465)
+    conta_corrente2 = ContaCorrente(None, 200, 654321)
+
+    conta_corrente1.transferir(110, conta_corrente2)
+
+    print(f"Conta Corrente 1, saldo: ", conta_corrente1.saldo)
+    print(f"Conta Corrente 2, saldo: ", conta_corrente2.saldo)
