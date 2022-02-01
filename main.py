@@ -1,5 +1,6 @@
 from pprint import pprint
-from exceptions import SaldoInsuficienteError
+from sqlite3 import OperationalError
+from exceptions import OperacaoFinanceiraError, SaldoInsuficienteError
 
 
 class Cliente:
@@ -20,6 +21,8 @@ class ContaCorrente:
         self.cliente = cliente
         self.__set_agencia(agencia)
         self.__set_numero(numero)
+        self.saques_nao_permitidos = 0
+        self.transferencias_nao_permitidos = 0
         ContaCorrente.total_contas_criadas += 1
         ContaCorrente.total_contas_criadas = (
             30 / ContaCorrente.total_contas_criadas
@@ -61,16 +64,24 @@ class ContaCorrente:
     def transferir(self, valor, favorecido):
         if valor < 0:
             raise ValueError("O valor sacado não pode ser menor que zero")
-        self.sacar(valor)
+        try:
+            self.sacar(valor)
+        except SaldoInsuficienteError as E:
+            #import traceback
+            self.transferencias_nao_permitidos += 1
+            #traceback.print_exc()
+            E.args = ()
+            raise OperacaoFinanceiraError("Operação não finalizada") from E
         favorecido.depositar(valor)
 
     def sacar(self, valor):
         if valor < 0:
             raise ValueError("O valor sacado não pode ser menor que zero")
         if self.__saldo < valor:
+            self.saques_nao_permitidos += 1
             # raise SaldoInsuficienteError(saldo=self.__saldo, valor=valor)
             # raise SaldoInsuficienteError("Saldo Insuficiente Para Transação")
-            raise SaldoInsuficienteError("", self.__saldo, valor, "abcd", "teste")
+            raise SaldoInsuficienteError("", self.__saldo, valor)
         self.__saldo -= valor
 
     def depositar(self, valor):
@@ -88,7 +99,7 @@ def main():
         try:
             nome = input("Nome do cliente:\n")
             agencia = input("Número de agência:\n")
-            breakpoint()
+            # breakpoint()
             numero = input("Numero da conta corrente:\n")
             cliente = Cliente(nome, None, None)
             conta_corrente = ContaCorrente(cliente, agencia, numero)
@@ -102,7 +113,16 @@ if __name__ == "__main__":
     conta_corrente1 = ContaCorrente(None, 400, 123465)
     conta_corrente2 = ContaCorrente(None, 200, 654321)
 
-    conta_corrente1.transferir(110, conta_corrente2)
-
-    print(f"Conta Corrente 1, saldo: ", conta_corrente1.saldo)
-    print(f"Conta Corrente 2, saldo: ", conta_corrente2.saldo)
+    try:
+        #conta_corrente1.transferir(1000, conta_corrente2)
+        conta_corrente1.sacar(1000)
+        print(f"Conta Corrente 1, saldo: ", conta_corrente1.saldo)
+        print(f"Conta Corrente 2, saldo: ", conta_corrente2.saldo)
+    except OperacaoFinanceiraError as E:
+        # import traceback
+        # print(E.saldo)
+        # print(E.valor)
+        # print("Exceção do tipo:", E.__class__.__name__)
+        # traceback.print_exc()
+        breakpoint()
+        pass
