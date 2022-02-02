@@ -1,6 +1,6 @@
 from pprint import pprint
-from sqlite3 import OperationalError
 from exceptions import OperacaoFinanceiraError, SaldoInsuficienteError
+from leitor import LeitorDeArquivo
 
 
 class Cliente:
@@ -110,19 +110,34 @@ def main():
 
 
 if __name__ == "__main__":
-    conta_corrente1 = ContaCorrente(None, 400, 123465)
-    conta_corrente2 = ContaCorrente(None, 200, 654321)
+    # conta_corrente1 = ContaCorrente(None, 400, 123465)
+    # conta_corrente2 = ContaCorrente(None, 200, 654321)
 
-    try:
-        #conta_corrente1.transferir(1000, conta_corrente2)
-        conta_corrente1.sacar(1000)
-        print(f"Conta Corrente 1, saldo: ", conta_corrente1.saldo)
-        print(f"Conta Corrente 2, saldo: ", conta_corrente2.saldo)
-    except OperacaoFinanceiraError as E:
-        # import traceback
-        # print(E.saldo)
-        # print(E.valor)
-        # print("Exceção do tipo:", E.__class__.__name__)
-        # traceback.print_exc()
-        breakpoint()
-        pass
+    # try:
+    #     #conta_corrente1.transferir(1000, conta_corrente2)
+    #     conta_corrente1.sacar(1000)
+    #     print(f"Conta Corrente 1, saldo: ", conta_corrente1.saldo)
+    #     print(f"Conta Corrente 2, saldo: ", conta_corrente2.saldo)
+    # except OperacaoFinanceiraError as E:
+    #     # import traceback
+    #     # print(E.saldo)
+    #     # print(E.valor)
+    #     # print("Exceção do tipo:", E.__class__.__name__)
+    #     # traceback.print_exc()
+    #     breakpoint()
+    #     pass
+
+    # try:
+    #     leitor = LeitorDeArquivo("arquivo.txt")
+    #     leitor.ler_proximo_linha()
+    #     leitor.ler_proximo_linha()
+    #     leitor.ler_proximo_linha()
+    # # except IOError:
+    # #     print("Exceção do tipo IOError capturada e tratada")
+    # finally:
+    #     if "leitor" in locals():
+    #         leitor.fechar()
+
+    with LeitorDeArquivo("arquivo.txt") as leitor:
+        leitor.ler_proximo_linha()
+
